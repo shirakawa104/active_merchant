@@ -294,6 +294,14 @@ module ActiveMerchant #:nodoc:
           end
 
           post[:card] = card
+
+          if creditcard.is_a?(NetworkTokenizationCreditCard)
+            post[:three_d_secure] = {
+              :apple_pay  => true,
+              :cryptogram => creditcard.payment_cryptogram
+            }
+          end
+
           add_address(post, options)
         elsif creditcard.kind_of?(String)
           if options[:track_data]
