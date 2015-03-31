@@ -13,7 +13,7 @@ class KomojuTest < Test::Unit::TestCase
     }
     @amount = 100
 
-    @options = {order_id: '1', description: 'Store Purchase'}
+    @options = {order_id: '1', description: 'Store Purchase', tax: "10"}
   end
 
   def test_successful_credit_card_purchase

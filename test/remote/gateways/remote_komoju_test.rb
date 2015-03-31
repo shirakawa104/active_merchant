@@ -17,7 +17,8 @@ class RemoteKomojuTest < Test::Unit::TestCase
 
     @options = {
       order_id: SecureRandom.uuid,
-      description: 'Store Purchase'
+      description: 'Store Purchase',
+      tax: '10'
     }
   end
 

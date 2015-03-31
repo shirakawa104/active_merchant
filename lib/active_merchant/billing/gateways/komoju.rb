@@ -33,6 +33,7 @@ module ActiveMerchant #:nodoc:
           currency: options[:currency] || currency(money)
         }
         params[:external_order_num] = options[:order_id] if options[:order_id]
+        params[:tax] = options[:tax] if options[:tax]
 
         commit(params)
       end
