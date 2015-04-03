@@ -65,7 +65,8 @@ module ActiveMerchant #:nodoc:
       end
 
       def create_payment_request(params)
-        Komoju.connect(@api_key, :url => url).payments.create(params)
+        client = Komoju.connect(@api_key, :url => url, :default_headers => headers)
+        client.payments.create(params)
       end
 
       def api_request(params)
@@ -94,6 +95,12 @@ module ActiveMerchant #:nodoc:
 
       def url
         test? ? self.test_url : self.live_url
+      end
+
+      def headers
+        {
+          "User-Agent" => "Komoju/v1 ActiveMerchantBindings/#{ActiveMerchant::VERSION}"
+        }
       end
     end
   end
