@@ -39,7 +39,11 @@ class KomojuTest < Test::Unit::TestCase
   end
 
   def test_failed_purchase
-    @gateway.expects(:create_payment_request).returns(failed_purchase_response)
+    response = mock
+    response.expects(:body).returns(JSON.generate(failed_purchase_response))
+    exception = Excon::Errors::HTTPStatusError.new("", nil, response)
+
+    @gateway.expects(:create_payment_request).raises(exception)
 
     response = @gateway.purchase(@amount, @credit_card, @options)
     assert_failure response
