@@ -4,11 +4,12 @@ require 'komoju'
 module ActiveMerchant #:nodoc:
   module Billing #:nodoc:
     class KomojuGateway < Gateway
-      self.live_url = "https://gateway-sandbox.degica.com/api/v1"
+      self.test_url = "https://sandbox.komoju.com/api/v1"
+      self.live_url = "https://komoju.com/api/v1"
       self.supported_countries = ['JP']
       self.default_currency = 'JPY'
       self.money_format = :cents
-      self.homepage_url = 'https://komoju.com/'
+      self.homepage_url = 'https://www.komoju.com/'
       self.display_name = 'Komoju'
       self.supported_cardtypes = [:visa, :master, :american_express, :jcb]
 
@@ -27,10 +28,10 @@ module ActiveMerchant #:nodoc:
 
       def purchase(money, payment, options = {})
         params = {
-          amount: amount(money),
-          description: options[:description],
-          payment_details: payment_details(payment, options),
-          currency: options[:currency] || currency(money)
+          :amount => amount(money),
+          :description => options[:description],
+          :payment_details => payment_details(payment, options),
+          :currency => options[:currency] || currency(money)
         }
         params[:external_order_num] = options[:order_id] if options[:order_id]
         params[:tax] = options[:tax] if options[:tax]
@@ -64,7 +65,7 @@ module ActiveMerchant #:nodoc:
       end
 
       def create_payment_request(params)
-        Komoju.connect(@api_key, url: self.live_url).payments.create(params)
+        Komoju.connect(@api_key, :url => url).payments.create(params)
       end
 
       def api_request(params)
@@ -82,12 +83,17 @@ module ActiveMerchant #:nodoc:
         success = !response.key?("error")
         message = success ? "Transaction succeeded" : response["error"]["message"]
         Response.new(success, message, response,
-                     error_code: success ? nil : error_code(response["error"]["code"]),
-                     authorization: success ? response["id"] : nil)
+                     :test => test?,
+                     :error_code => success ? nil : error_code(response["error"]["code"]),
+                     :authorization => success ? response["id"] : nil)
       end
 
       def error_code(code)
         STANDARD_ERROR_CODE_MAPPING[code] || code
+      end
+
+      def url
+        test? ? self.test_url : self.live_url
       end
     end
   end
