@@ -1,5 +1,4 @@
 require 'json'
-require 'komoju'
 
 module ActiveMerchant #:nodoc:
   module Billing #:nodoc:
@@ -64,29 +63,44 @@ module ActiveMerchant #:nodoc:
         details
       end
 
-      def create_payment_request(params)
-        client = Komoju.connect(@api_key, :url => url, :default_headers => headers)
-        client.payments.create(params)
-      end
-
-      def api_request(params)
-        response = nil
+      def api_request(data)
+        raw_response = nil
         begin
-          response = create_payment_request(params)
-        rescue Excon::Errors::HTTPStatusError => e
-          response = JSON.parse(e.response.body)
+          raw_response = ssl_post("#{url}/payments", data, headers)
+        rescue ResponseError => e
+          raw_response = e.response.body
         end
-        response
+
+        JSON.parse(raw_response)
       end
 
       def commit(params)
-        response = api_request(params)
+        response = api_request(post_data(params))
         success = !response.key?("error")
         message = success ? "Transaction succeeded" : response["error"]["message"]
         Response.new(success, message, response,
                      :test => test?,
                      :error_code => success ? nil : error_code(response["error"]["code"]),
                      :authorization => success ? response["id"] : nil)
+      end
+
+      def post_data(params)
+        return nil unless params
+
+        params.map do |key, value|
+          next if value.blank?
+          if value.is_a?(Hash)
+            h = {}
+            value.each do |k, v|
+              h["#{key}[#{k}]"] = v unless v.blank?
+            end
+            post_data(h)
+          elsif value.is_a?(Array)
+            value.map { |v| "#{key}[]=#{CGI.escape(v.to_s)}" }.join("&")
+          else
+            "#{key}=#{CGI.escape(value.to_s)}"
+          end
+        end.compact.join("&")
       end
 
       def error_code(code)
@@ -99,6 +113,7 @@ module ActiveMerchant #:nodoc:
 
       def headers
         {
+          "Authorization" => "Basic " + Base64.encode64(@api_key.to_s + ":").strip,
           "User-Agent" => "Komoju/v1 ActiveMerchantBindings/#{ActiveMerchant::VERSION}"
         }
       end

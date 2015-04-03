@@ -18,7 +18,7 @@ class KomojuTest < Test::Unit::TestCase
 
   def test_successful_credit_card_purchase
     successful_response = successful_credit_card_purchase_response
-    @gateway.expects(:create_payment_request).returns(successful_response)
+    @gateway.expects(:ssl_post).returns(JSON.generate(successful_response))
 
     response = @gateway.purchase(@amount, @credit_card, @options)
     assert_success response
@@ -29,7 +29,7 @@ class KomojuTest < Test::Unit::TestCase
 
   def test_successful_konbini_purchase
     successful_response = successful_konbini_purchase_response
-    @gateway.expects(:create_payment_request).returns(successful_response)
+    @gateway.expects(:ssl_post).returns(JSON.generate(successful_response))
 
     response = @gateway.purchase(@amount, @konbini, @options)
     assert_success response
@@ -39,11 +39,11 @@ class KomojuTest < Test::Unit::TestCase
   end
 
   def test_failed_purchase
-    response = mock
-    response.expects(:body).returns(JSON.generate(failed_purchase_response))
-    exception = Excon::Errors::HTTPStatusError.new("", nil, response)
+    raw_response = mock
+    raw_response.expects(:body).returns(JSON.generate(failed_purchase_response))
+    exception = ActiveMerchant::ResponseError.new(raw_response)
 
-    @gateway.expects(:create_payment_request).raises(exception)
+    @gateway.expects(:ssl_post).raises(exception)
 
     response = @gateway.purchase(@amount, @credit_card, @options)
     assert_failure response
