@@ -2,18 +2,18 @@ require 'test_helper'
 
 class KomojuTest < Test::Unit::TestCase
   def setup
-    @gateway = KomojuGateway.new(login: 'login')
+    @gateway = KomojuGateway.new(:login => 'login')
 
     @credit_card = credit_card
     @konbini = {
-      type: 'konbini',
-      store: 'lawson',
-      email: 'test@example.com',
-      phone: '09011112222'
+      :type  => 'konbini',
+      :store => 'lawson',
+      :email => 'test@example.com',
+      :phone => '09011112222'
     }
     @amount = 100
 
-    @options = {order_id: '1', description: 'Store Purchase', tax: "10"}
+    @options = {:order_id => '1', description => 'Store Purchase', :tax => "10"}
   end
 
   def test_successful_credit_card_purchase
@@ -24,6 +24,7 @@ class KomojuTest < Test::Unit::TestCase
     assert_success response
 
     assert_equal successful_response["id"], response.authorization
+    assert response.test?
   end
 
   def test_successful_konbini_purchase
@@ -34,6 +35,7 @@ class KomojuTest < Test::Unit::TestCase
     assert_success response
 
     assert_equal successful_response["id"], response.authorization
+    assert response.test?
   end
 
   def test_failed_purchase
@@ -42,6 +44,7 @@ class KomojuTest < Test::Unit::TestCase
     response = @gateway.purchase(@amount, @credit_card, @options)
     assert_failure response
     assert_equal "missing_parameter", response.error_code
+    assert response.test?
   end
 
   private
