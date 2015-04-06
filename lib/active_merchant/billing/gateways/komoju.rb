@@ -75,32 +75,13 @@ module ActiveMerchant #:nodoc:
       end
 
       def commit(params)
-        response = api_request(post_data(params))
+        response = api_request(params.to_json)
         success = !response.key?("error")
         message = success ? "Transaction succeeded" : response["error"]["message"]
         Response.new(success, message, response,
                      :test => test?,
                      :error_code => success ? nil : error_code(response["error"]["code"]),
                      :authorization => success ? response["id"] : nil)
-      end
-
-      def post_data(params)
-        return nil unless params
-
-        params.map do |key, value|
-          next if value.blank?
-          if value.is_a?(Hash)
-            h = {}
-            value.each do |k, v|
-              h["#{key}[#{k}]"] = v unless v.blank?
-            end
-            post_data(h)
-          elsif value.is_a?(Array)
-            value.map { |v| "#{key}[]=#{CGI.escape(v.to_s)}" }.join("&")
-          else
-            "#{key}=#{CGI.escape(value.to_s)}"
-          end
-        end.compact.join("&")
       end
 
       def error_code(code)
@@ -114,6 +95,8 @@ module ActiveMerchant #:nodoc:
       def headers
         {
           "Authorization" => "Basic " + Base64.encode64(@api_key.to_s + ":").strip,
+          "Accept" => "application/json",
+          "Content-Type" => "application/json",
           "User-Agent" => "Komoju/v1 ActiveMerchantBindings/#{ActiveMerchant::VERSION}"
         }
       end
