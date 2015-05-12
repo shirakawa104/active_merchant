@@ -39,6 +39,7 @@ module ActiveMerchant #:nodoc:
       end
 
       def refund(money, identification, options = {})
+        commit("/payments/#{identification}/refund", {})
       end
 
       private

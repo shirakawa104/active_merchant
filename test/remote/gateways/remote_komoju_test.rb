@@ -42,6 +42,15 @@ class RemoteKomojuTest < Test::Unit::TestCase
     assert_equal true, response.params['succeeded']
   end
 
+  def test_successful_credit_card_refund
+    purchase_response = @gateway.purchase(@amount, @credit_card, @options)
+    assert_success purchase_response
+    assert purchase_response.authorization.present?
+    refund_response = @gateway.refund(@amount, purchase_response.authorization, {})
+    assert_success refund_response
+    assert_equal 'refunded', refund_response.params['status']
+  end
+
   def test_successful_konbini_purchase
     response = @gateway.purchase(@amount, @konbini, @options)
     assert_success response

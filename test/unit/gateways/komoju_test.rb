@@ -51,6 +51,17 @@ class KomojuTest < Test::Unit::TestCase
     assert response.test?
   end
 
+  def test_successful_credit_card_refund
+    successful_response = successful_credit_card_refund_response
+    @gateway.expects(:ssl_post).returns(JSON.generate(successful_response))
+
+    response = @gateway.refund(@amount,  "7e8c55a54256ce23e387f2838c", @options)
+    assert_success response
+
+    assert_equal successful_response["id"], response.authorization
+    assert response.test?
+  end
+
   private
 
   def successful_credit_card_purchase_response
@@ -74,6 +85,34 @@ class KomojuTest < Test::Unit::TestCase
       "description" => "Store Purchase",
       "subscription" => nil,
       "succeeded" => true,
+      "metadata" => {
+        "order_id" => "262f2a92-542c-4b4e-a68b-5b6d54a438a8"
+      },
+      "created_at" => "2015-03-20T04:51:48Z"
+    }
+  end
+
+  def successful_credit_card_refund_response
+    {
+      "id" => "7e8c55a54256ce23e387f2838c",
+      "resource" => "payment",
+      "status" => "refunded",
+      "amount" => 100,
+      "tax" => 8,
+      "payment_deadline" => nil,
+      "payment_details" => {
+        "type" => "credit_card",
+        "brand" => "visa",
+        "last_four_digits" => "2220",
+        "month" => 9,
+        "year" => 2016
+      },
+      "payment_method_fee" => 0,
+      "total" => 108,
+      "currency" => "JPY",
+      "description" => "Store Purchase",
+      "subscription" => nil,
+      "succeeded" => false,
       "metadata" => {
         "order_id" => "262f2a92-542c-4b4e-a68b-5b6d54a438a8"
       },
