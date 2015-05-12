@@ -35,7 +35,10 @@ module ActiveMerchant #:nodoc:
         params[:external_order_num] = options[:order_id] if options[:order_id]
         params[:tax] = options[:tax] if options[:tax]
 
-        commit(params)
+        commit("/payments", params)
+      end
+
+      def refund(money, identification, options = {})
       end
 
       private
@@ -63,10 +66,10 @@ module ActiveMerchant #:nodoc:
         details
       end
 
-      def api_request(data)
+      def api_request(path, data)
         raw_response = nil
         begin
-          raw_response = ssl_post("#{url}/payments", data, headers)
+          raw_response = ssl_post("#{url}#{path}", data, headers)
         rescue ResponseError => e
           raw_response = e.response.body
         end
@@ -74,8 +77,8 @@ module ActiveMerchant #:nodoc:
         JSON.parse(raw_response)
       end
 
-      def commit(params)
-        response = api_request(params.to_json)
+      def commit(path, params)
+        response = api_request(path, params.to_json)
         success = !response.key?("error")
         message = success ? "Transaction succeeded" : response["error"]["message"]
         Response.new(success, message, response,
