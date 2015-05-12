@@ -39,7 +39,7 @@ class RemoteKomojuTest < Test::Unit::TestCase
     assert_equal 'Transaction succeeded', response.message
     assert_equal 100, response.params['amount']
     assert_equal "1111", response.params['payment_details']['last_four_digits']
-    assert_equal true, response.params['succeeded']
+    assert_equal true, response.params['captured_at'].present?
   end
 
   def test_successful_credit_card_refund

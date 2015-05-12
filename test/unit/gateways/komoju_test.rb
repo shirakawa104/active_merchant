@@ -84,7 +84,7 @@ class KomojuTest < Test::Unit::TestCase
       "currency" => "JPY",
       "description" => "Store Purchase",
       "subscription" => nil,
-      "succeeded" => true,
+      "captured_at" => "2015-03-20T04:51:48Z",
       "metadata" => {
         "order_id" => "262f2a92-542c-4b4e-a68b-5b6d54a438a8"
       },
@@ -112,7 +112,7 @@ class KomojuTest < Test::Unit::TestCase
       "currency" => "JPY",
       "description" => "Store Purchase",
       "subscription" => nil,
-      "succeeded" => false,
+      "captured_at" => nil,
       "metadata" => {
         "order_id" => "262f2a92-542c-4b4e-a68b-5b6d54a438a8"
       },
@@ -150,7 +150,7 @@ class KomojuTest < Test::Unit::TestCase
      "currency" => "JPY",
      "description" => nil,
      "subscription" => nil,
-     "succeeded" => false,
+     "captured_at" => nil,
      "metadata" => {
        "order_id" => "262f2a92-542c-4b4e-a68b-5b6d54a438a8"
      },
