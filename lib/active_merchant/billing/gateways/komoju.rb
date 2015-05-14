@@ -34,6 +34,7 @@ module ActiveMerchant #:nodoc:
         }
         params[:external_order_num] = options[:order_id] if options[:order_id]
         params[:tax] = options[:tax] if options[:tax]
+        params[:fraud_details] = fraud_details(options) unless fraud_details(options).empty?
 
         commit("/payments", params)
       end
@@ -52,6 +53,15 @@ module ActiveMerchant #:nodoc:
                   end
 
         details[:email] = options[:email] if options[:email]
+        details
+      end
+
+      def fraud_details(options)
+        details = {}
+        details[:customer_ip] = options[:ip] if options[:ip]
+        details[:customer_email] = options[:email] if options[:email]
+        details[:browser_language] = options[:browser_language] if options[:browser_language]
+        details[:browser_user_agent] = options[:browser_user_agent] if options[:browser_user_agent]
         details
       end
 

@@ -28,7 +28,11 @@ class RemoteKomojuTest < Test::Unit::TestCase
     @options = {
       :order_id => SecureRandom.uuid,
       :description => 'Store Purchase',
-      :tax => '10.0'
+      :tax => '10.0',
+      :ip => "192.168.0.1",
+      :email => "valid@email.com",
+      :browser_language => "en",
+      :browser_user_agent => "user_agent"
     }
   end
 
