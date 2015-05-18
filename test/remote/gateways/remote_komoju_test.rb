@@ -8,6 +8,8 @@ class RemoteKomojuTest < Test::Unit::TestCase
     @amount = 100
     @credit_card = credit_card('4111111111111111')
     @declined_card = credit_card('4123111111111059')
+    @fraudulent_card = credit_card('4123111111111083')
+
     @konbini = {
       :type  => 'konbini',
       :store => 'lawson',
@@ -44,6 +46,7 @@ class RemoteKomojuTest < Test::Unit::TestCase
     assert_equal 100, response.params['amount']
     assert_equal "1111", response.params['payment_details']['last_four_digits']
     assert_equal true, response.params['captured_at'].present?
+    refute response.fraud_review?
   end
 
   def test_successful_credit_card_refund
@@ -75,6 +78,14 @@ class RemoteKomojuTest < Test::Unit::TestCase
     assert_failure response
     assert response.authorization.blank?
     assert_equal 'card_declined', response.error_code
+  end
+
+  def test_detected_fraud
+    response = @gateway.purchase(@amount, @fraudulent_card, @options)
+    assert_failure response
+    assert response.authorization.blank?
+    assert_equal 'fraudulent', response.error_code
+    assert response.fraud_review?
   end
 
   def test_invalid_login

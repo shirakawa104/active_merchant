@@ -32,6 +32,7 @@ class KomojuTest < Test::Unit::TestCase
     assert_success response
 
     assert_equal successful_response["id"], response.authorization
+    refute response.fraud_review?
     assert response.test?
   end
 
@@ -56,6 +57,20 @@ class KomojuTest < Test::Unit::TestCase
     response = @gateway.purchase(@amount, @credit_card, @options)
     assert_failure response
     assert_equal "missing_parameter", response.error_code
+    assert response.test?
+  end
+
+  def test_detected_fraud
+    raw_response = mock
+    raw_response.expects(:body).returns(JSON.generate(detacted_fraud_response))
+    exception = ActiveMerchant::ResponseError.new(raw_response)
+
+    @gateway.expects(:ssl_post).raises(exception)
+
+    response = @gateway.purchase(@amount, @credit_card, @options)
+    assert_failure response
+    assert_equal "fraudulent", response.error_code
+    assert response.fraud_review?
     assert response.test?
   end
 
@@ -134,6 +149,16 @@ class KomojuTest < Test::Unit::TestCase
         "code" => "missing_parameter",
         "message" => "A required parameter (currency) is missing",
         "param" => "currency"
+      }
+    }
+  end
+
+  def detacted_fraud_response
+    {
+      "error" => {
+        "code" => "fraudulent",
+        "message" => "The payment could not be completed.",
+        "param" => nil
       }
     }
   end

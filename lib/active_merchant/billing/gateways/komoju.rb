@@ -93,9 +93,10 @@ module ActiveMerchant #:nodoc:
         success = !response.key?("error")
         message = success ? "Transaction succeeded" : response["error"]["message"]
         Response.new(success, message, response,
-                     :test => test?,
-                     :error_code => success ? nil : error_code(response["error"]["code"]),
-                     :authorization => success ? response["id"] : nil)
+                     :test          => test?,
+                     :error_code    => success ? nil : error_code(response["error"]["code"]),
+                     :authorization => success ? response["id"] : nil,
+                     :fraud_review  => success ? false : fraud_review?(response["error"]["code"]))
       end
 
       def error_code(code)
@@ -113,6 +114,10 @@ module ActiveMerchant #:nodoc:
           "Content-Type" => "application/json",
           "User-Agent" => "Komoju/v1 ActiveMerchantBindings/#{ActiveMerchant::VERSION}"
         }
+      end
+
+      def fraud_review?(code)
+        code == "fraudulent"
       end
     end
   end
